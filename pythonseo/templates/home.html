@@ -11,7 +11,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h2 class="card-title text-center">Analyse de l'URL</h2>
-                        <form method="POST" action="">
+                        <form method="POST" action="{{ url_for('analyze') }}">
                             {{ form.csrf_token }}
                             <div class="input-group mb-3">
                                 {{ form.url(class="form-control", placeholder="Entrez l'URL à analyser") }}

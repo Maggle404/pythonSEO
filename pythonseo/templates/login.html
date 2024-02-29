@@ -1,19 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<h1>Connectez vous !</h1>
-<form method="post" action="">
+{% extends "base.html" %}
 
-    <p>{{form.hidden_tag()}}</p>
-    <p>{{form.email.label}} {{form.email()}}</p>
-    <p>{{form.password.label}} {{form.password()}}</p>
+{% block title %}
+    Login
+{% endblock %}
 
-
-    <button type="submit">envoyer</button>
-</form>
-</body>
-</html>
+{% block content %}
+    <div class="container">
+        <div class="card mt-5">
+            <div class="card-header">
+                <h2>Login</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('login') }}">
+                    {{ form.csrf_token }}
+                    <div class="form-group">
+                        {{ form.email.label }}
+                        {{ form.email(class="form-control", placeholder="Enter email") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.password.label }}
+                        {{ form.password(class="form-control", placeholder="Enter password") }}
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

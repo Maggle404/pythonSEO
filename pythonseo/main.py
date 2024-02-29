@@ -27,7 +27,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:@localhost/
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
-
 def connection():
     try:
         conn = mysql.connector.connect(
@@ -42,12 +41,11 @@ def connection():
         print(f"Erreur lors de la connexion à MySQL: {e}")
         return None
 
-
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255))
-
+    analyses = db.relationship('Analysis', backref='user', lazy=True)
 
 class Analysis(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -68,14 +66,11 @@ class Analysis(db.Model):
     nav_tags = db.Column(db.Integer)
     div_nesting = db.Column(db.Integer)
 
-
 with app.app_context():
     db.create_all()
 
-
 class UserUrl(FlaskForm):
     url = StringField('URL à analyser', validators=[DataRequired()])
-
 
 class UserForm(FlaskForm):
     email = StringField('Votre mail', validators=[DataRequired()])
@@ -91,7 +86,7 @@ def register():
         hashed = bcrypt.generate_password_hash(password).decode('utf-8')
         db.session.add(Users(email=email, password=hashed))
         db.session.commit()
-        return redirect(url_for('login'))  # remplacer par une bonne url
+        return redirect(url_for('login')) #remplacer par une bonne url
     return render_template('/signup.html', form=form)
 
 
@@ -105,23 +100,21 @@ def login():
         user = Users.query.filter_by(email=email).first()
         if user and bcrypt.check_password_hash(user.password, password):
             session['user_id'] = user.id
-            return redirect(url_for('home.html'))  # remplacer par une bonne url
+            return redirect(url_for('home')) #remplacer par une bonne url
         else:
             return "Invalid"
 
     return render_template('/login.html', form=form)
 
-
 @app.route('/analyze', methods=['GET', 'POST'])
 def analyze():
-    form = UserUrl()
-    if form.validate_on_submit():
-        url = form.url.data
-        # Appelez la fonction d'analyse avec l'URL fournie
-        analyze_url(url)
-        return redirect(url_for('result'))  # ou une autre page de votre choix
-    return render_template('analyze_form.html', form=form)
-
+        form = UserUrl()
+        if form.validate_on_submit():
+            url = form.url.data
+            # Appelez la fonction d'analyse avec l'URL fournie
+            analyze_url(url)
+            return redirect(url_for('result'))  # ou une autre page de votre choix
+        return render_template('analyze_form.html', form=form)
 
 @app.route('/result')
 def result():
@@ -130,6 +123,16 @@ def result():
 
     return render_template('result.html', analysis_data=analysis_data)
 
+@app.route('/history')
+def history():
+    user_id = session.get('user_id')
+    if user_id:
+        # Récupérer toutes les analyses associées à l'utilisateur à partir de la base de données
+        user_analyses = Analysis.query.filter_by(user_id=user_id).all()
+        return render_template('history.html', analyses=user_analyses)
+    else:
+        # Rediriger l'utilisateur vers la page de connexion s'il n'est pas connecté
+        return redirect(url_for('login'))
 
 def extract_domain_name(url):
     if 'www' in url:
@@ -139,16 +142,11 @@ def extract_domain_name(url):
         domain = urlparse(url).netloc
         domain_parts = domain.split('.')
         return domain_parts[0]
-
-
 def get_links(url, soup):
     links = soup.find_all('a')
     domain_name = extract_domain_name(url)
-    internal_links = list(islice((link for link in links if
-                                  domain_name in urlparse(link.get('href')).netloc or link.get('href').startswith(
-                                      ('/', '#'))), 10))
-    external_links = list(islice((link for link in links if link.get('href') and not link.get('href').startswith(
-        ('/', '#')) and domain_name not in urlparse(link.get('href')).netloc), 10))
+    internal_links = list(islice((link for link in links if domain_name in urlparse(link.get('href')).netloc or link.get('href').startswith(('/', '#'))), 10))
+    external_links = list(islice((link for link in links if link.get('href') and not link.get('href').startswith(('/', '#')) and domain_name not in urlparse(link.get('href')).netloc), 10))
 
     broken_internal_links = []
     broken_external_links = []
@@ -190,6 +188,7 @@ def analyze_url(url):
             footer_tag = soup.footer is not None
             nav_tags = soup.find_all('nav')
             div_tags = soup.find_all('div')
+            user_id = session.get('user_id'),
 
             cursor = conn.cursor()
             query = ("INSERT INTO analysis (user_id, url, title_tag,"
@@ -198,7 +197,8 @@ def analyze_url(url):
                      "header_tag, main_tag, footer_tag, nav_tags, div_nesting)"
                      "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
             params = [
-                1,
+
+                user_id if user_id is not None else 0,
                 url if url is not None else None,
                 title_tag.string if title_tag and title_tag.string is not None else None,
                 len(internal_links) if internal_links is not None else None,
