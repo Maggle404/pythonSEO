@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Historique des analyses
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title text-center">Historique des analyses</h2>
+                        {% if analyses %}
+                            {% for analysis in analyses %}
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Analyse {{ loop.index }}</h5>
+                                        <p class="card-text">URL analysée : {{ analysis.url }}</p>
+                                        <p class="card-text">Titre de la page : {{ analysis.title_tag }}</p>
+                                        <p class="card-text">Nombre de liens internes : {{ analysis.internal_links }}</p>
+                                        <p class="card-text">Nombre de liens externes : {{ analysis.external_links }}</p>
+                                        <p class="card-text">Liens internes cassés : {{ analysis.broken_internal_links }}</p>
+                                        <p class="card-text">Liens externes cassés : {{ analysis.broken_external_links }}</p>
+                                        <p class="card-text">Titre de h1 : {{ analysis.h1_tag }}</p>
+                                        <p class="card-text">Nombre de balises h2 : {{ analysis.h2_tags }}</p>
+                                        <p class="card-text">Nombre de balises h3 : {{ analysis.h3_tags }}</p>
+                                        <p class="card-text">Nombre d'images sans attribut alt : {{ analysis.img_without_alt }}</p>
+                                        <p class="card-text">Présence de la balise header : {{ "Oui" if analysis.header_tag else "Non" }}</p>
+                                        <p class="card-text">Présence de la balise main : {{ "Oui" if analysis.main_tag else "Non" }}</p>
+                                        <p class="card-text">Présence de la balise footer : {{ "Oui" if analysis.footer_tag else "Non" }}</p>
+                                        <p class="card-text">Nombre de balises nav : {{ analysis.nav_tags }}</p>
+                                        <p class="card-text">Niveau d'imbrication des balises div : {{ analysis.div_nesting }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>Aucune analyse trouvée.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
