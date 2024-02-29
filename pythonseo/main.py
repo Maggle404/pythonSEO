@@ -1,7 +1,3 @@
-# This is a sample Python script.
-
-# Press Maj+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from flask import Flask, request, jsonify, render_template, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
@@ -11,6 +7,7 @@ from wtforms.fields.simple import TextAreaField
 from wtforms.validators import DataRequired
 
 app = Flask(__name__)
+
 app.config['SECRET_KEY'] = 'test'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:@localhost/pythonseo'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -43,9 +40,6 @@ class Analysis(db.Model):
 
 with app.app_context():
     db.create_all()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
-
 
 if __name__ == "__main__":
     app.run(debug=True)
