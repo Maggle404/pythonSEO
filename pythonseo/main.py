@@ -45,6 +45,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255))
+    analyses = db.relationship('Analysis', backref='user', lazy=True)
 
 class Analysis(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -121,6 +122,18 @@ def result():
     analysis_data = Analysis.query.first()  # Cela récupère la première ligne de la table Analysis, vous devrez ajuster cela selon votre logique
 
     return render_template('result.html', analysis_data=analysis_data)
+
+@app.route('/history')
+def history():
+    user_id = session.get('user_id')
+    if user_id:
+        # Récupérer toutes les analyses associées à l'utilisateur à partir de la base de données
+        user_analyses = Analysis.query.filter_by(user_id=user_id).all()
+        return render_template('history.html', analyses=user_analyses)
+    else:
+        # Rediriger l'utilisateur vers la page de connexion s'il n'est pas connecté
+        return redirect(url_for('login'))
+
 def extract_domain_name(url):
     if 'www' in url:
         www_domain = url.split('.')
@@ -175,6 +188,7 @@ def analyze_url(url):
             footer_tag = soup.footer is not None
             nav_tags = soup.find_all('nav')
             div_tags = soup.find_all('div')
+            user_id = session.get('user_id'),
 
             cursor = conn.cursor()
             query = ("INSERT INTO analysis (user_id, url, title_tag,"
@@ -183,7 +197,8 @@ def analyze_url(url):
                      "header_tag, main_tag, footer_tag, nav_tags, div_nesting)"
                      "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
             params = [
-                1,
+
+                user_id if user_id is not None else 0,
                 url if url is not None else None,
                 title_tag.string if title_tag and title_tag.string is not None else None,
                 len(internal_links) if internal_links is not None else None,
