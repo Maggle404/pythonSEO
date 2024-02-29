@@ -27,6 +27,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:@localhost/
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
+
 def connection():
     try:
         conn = mysql.connector.connect(
@@ -41,10 +42,12 @@ def connection():
         print(f"Erreur lors de la connexion à MySQL: {e}")
         return None
 
+
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255))
+
 
 class Analysis(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -65,11 +68,14 @@ class Analysis(db.Model):
     nav_tags = db.Column(db.Integer)
     div_nesting = db.Column(db.Integer)
 
+
 with app.app_context():
     db.create_all()
 
+
 class UserUrl(FlaskForm):
     url = StringField('URL à analyser', validators=[DataRequired()])
+
 
 class UserForm(FlaskForm):
     email = StringField('Votre mail', validators=[DataRequired()])
@@ -85,7 +91,7 @@ def register():
         hashed = bcrypt.generate_password_hash(password).decode('utf-8')
         db.session.add(Users(email=email, password=hashed))
         db.session.commit()
-        return redirect(url_for('login')) #remplacer par une bonne url
+        return redirect(url_for('login'))  # remplacer par une bonne url
     return render_template('/signup.html', form=form)
 
 
@@ -99,21 +105,23 @@ def login():
         user = Users.query.filter_by(email=email).first()
         if user and bcrypt.check_password_hash(user.password, password):
             session['user_id'] = user.id
-            return redirect(url_for('home.html')) #remplacer par une bonne url
+            return redirect(url_for('home.html'))  # remplacer par une bonne url
         else:
             return "Invalid"
 
     return render_template('/login.html', form=form)
 
+
 @app.route('/analyze', methods=['GET', 'POST'])
 def analyze():
-        form = UserUrl()
-        if form.validate_on_submit():
-            url = form.url.data
-            # Appelez la fonction d'analyse avec l'URL fournie
-            analyze_url(url)
-            return redirect(url_for('result'))  # ou une autre page de votre choix
-        return render_template('analyze_form.html', form=form)
+    form = UserUrl()
+    if form.validate_on_submit():
+        url = form.url.data
+        # Appelez la fonction d'analyse avec l'URL fournie
+        analyze_url(url)
+        return redirect(url_for('result'))  # ou une autre page de votre choix
+    return render_template('analyze_form.html', form=form)
+
 
 @app.route('/result')
 def result():
@@ -121,6 +129,8 @@ def result():
     analysis_data = Analysis.query.first()  # Cela récupère la première ligne de la table Analysis, vous devrez ajuster cela selon votre logique
 
     return render_template('result.html', analysis_data=analysis_data)
+
+
 def extract_domain_name(url):
     if 'www' in url:
         www_domain = url.split('.')
@@ -129,11 +139,16 @@ def extract_domain_name(url):
         domain = urlparse(url).netloc
         domain_parts = domain.split('.')
         return domain_parts[0]
+
+
 def get_links(url, soup):
     links = soup.find_all('a')
     domain_name = extract_domain_name(url)
-    internal_links = list(islice((link for link in links if domain_name in urlparse(link.get('href')).netloc or link.get('href').startswith(('/', '#'))), 10))
-    external_links = list(islice((link for link in links if link.get('href') and not link.get('href').startswith(('/', '#')) and domain_name not in urlparse(link.get('href')).netloc), 10))
+    internal_links = list(islice((link for link in links if
+                                  domain_name in urlparse(link.get('href')).netloc or link.get('href').startswith(
+                                      ('/', '#'))), 10))
+    external_links = list(islice((link for link in links if link.get('href') and not link.get('href').startswith(
+        ('/', '#')) and domain_name not in urlparse(link.get('href')).netloc), 10))
 
     broken_internal_links = []
     broken_external_links = []
