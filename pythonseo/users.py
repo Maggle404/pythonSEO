@@ -41,18 +41,8 @@ def Login():
 
     return render_template('login.html', form=form)
 
-@app.route('/login', methods=['GET', 'POST'])
-def Login():
-    form = UserForm()
-    if form.validate_on_submit():
-        email = form.email.data
-        password = form.password.data
-
-        user = Users.query.filter_by(email=email).first()
-        if user and user.password == password:
-            session['user_id'] = user.id
-            return redirect(url_for(''))  # remplacer par une bonne url
-        else:
-            return "Invalid"
-
-    return render_template('login.html', form=form)
+@app.route('/logout')
+def logout():
+    if 'user_id' in session:
+        session.pop('user_id')
+    return redirect(url_for('login'))
