@@ -5,8 +5,12 @@
     <title>Title</title>
 </head>
 <body>
-<h1>Formulaire creation jeux</h1>
+<h1>Inscription</h1>
 <form method="post" action="">
+
+    <p>{{form.hidden_tag()}}</p>
+    <p>{{form.email.label}} {{form.email()}}</p>
+    <p>{{form.password.label}} {{form.password()}}</p>
 
     <button type="submit">envoyer</button>
 </form>
