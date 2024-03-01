@@ -12,17 +12,22 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="#">My Website</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler"   type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
+                    {% if session.user_id %}
                     <li class="nav-item">
-                        <a class="nav-link" href="analyse_form.html">Analyse</a>
+                        <a class="nav-link" href="{{ url_for('analyze') }}">Analyse</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="hisory.html">Historique des analyses</a>
+                        <a class="nav-link" href="{{ url_for('history') }}">Historique des analyses</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Déconnexion</a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
