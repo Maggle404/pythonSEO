@@ -45,9 +45,9 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255))
-    analyses = db.relationship('Analysis', backref='user', lazy=True)
+    analyses = db.relationship('analysis', backref='user', lazy=True)
 
-class Analysis(db.Model):
+class analysis(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     url = db.Column(db.String(255))
@@ -127,7 +127,7 @@ def analyze():
 @app.route('/result')
 def result():
     # Supposons que vous récupériez les données d'analyse depuis la base de données
-    analysis_data = Analysis.query.first()  # Cela récupère la première ligne de la table Analysis, vous devrez ajuster cela selon votre logique
+    analysis_data = analysis.query.first()  # Cela récupère la première ligne de la table Analysis, vous devrez ajuster cela selon votre logique
 
     return render_template('result.html', analysis_data=analysis_data)
 
@@ -136,7 +136,7 @@ def history():
     user_id = session.get('user_id')
     if user_id:
         # Récupérer toutes les analyses associées à l'utilisateur à partir de la base de données
-        user_analyses = Analysis.query.filter_by(user_id=user_id).all()
+        user_analyses = analysis.query.filter_by(user_id=user_id).all()
         return render_template('history.html', analyses=user_analyses)
     else:
         # Rediriger l'utilisateur vers la page de connexion s'il n'est pas connecté
@@ -196,7 +196,7 @@ def analyze_url(url):
             footer_tag = soup.footer is not None
             nav_tags = soup.find_all('nav')
             div_tags = soup.find_all('div')
-            user_id = session.get('user_id'),
+            user_id = session.get('user_id')
 
             cursor = conn.cursor()
             query = ("INSERT INTO analysis (user_id, url, title_tag,"
@@ -204,16 +204,16 @@ def analyze_url(url):
                      "broken_external_links, h1_tag, h2_tags, h3_tags, img_without_alt,"
                      "header_tag, main_tag, footer_tag, nav_tags, div_nesting)"
                      "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
-            params = [
+            params = (
 
                 user_id if user_id is not None else 0,
                 url if url is not None else None,
-                title_tag.string if title_tag and title_tag.string is not None else None,
+                str(title_tag.string) if title_tag and title_tag.string is not None else None,
                 len(internal_links) if internal_links is not None else None,
                 len(external_links) if external_links is not None else None,
                 ', '.join(broken_internal_links) if broken_internal_links is not None else None,
                 ', '.join(broken_external_links) if broken_external_links is not None else None,
-                h1_tag.string if h1_tag and h1_tag.string is not None else None,
+                str(h1_tag.string) if h1_tag and h1_tag.string is not None else None,
                 len(h2_tags) if h2_tags is not None else None,
                 len(h3_tags) if h3_tags is not None else None,
                 len(images_without_alt) if images_without_alt is not None else None,
@@ -222,7 +222,7 @@ def analyze_url(url):
                 footer_tag if footer_tag is not None else None,
                 len(nav_tags) if nav_tags is not None else None,
                 len(div_tags) if div_tags is not None else None
-            ]
+        )
 
             cursor.execute(query, params)
             conn.commit()
