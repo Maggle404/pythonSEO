@@ -21,7 +21,12 @@
                         {{ form.password.label }}
                         {{ form.password(class="form-control", placeholder="Enter password") }}
                     </div>
-                    <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+                    <button type="submit" class="btn btn-primary btn-block">S'inscrire</button>
+                </form>
+                <div style="padding-top: 16px;"></div>
+                <form method="GET" action="{{ url_for('login') }}">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-primary btn-block">Se Connecter</button>
                 </form>
             </div>
         </div>
